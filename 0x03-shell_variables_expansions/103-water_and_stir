@@ -1,5 +1,2 @@
 #!/bin/bash
-num1=$((2#$WATER))
-num2=$((10#$STIR))
-sum=$((num1 + num2))
-printf "%x\n" "$sum"
+printf "%x\n" "$((2#$WATER + 10#$STIR))"
