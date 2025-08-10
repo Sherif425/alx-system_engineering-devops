@@ -1,0 +1,79 @@
+### User Accessing the Website
+
+Let's start with a user who wants to access the website at www.foobar.com. The user opens a web browser on their computer and types in the URL "www.foobar.com". This initiates a process where the browser resolves the domain name to an IP address via DNS, then sends an HTTP request to the server at that IP. The server processes the request and returns the website content (HTML, CSS, etc.) back to the user's browser for rendering.
+
+### Whiteboard Design of the One-Server Web Infrastructure
+
+Imagine a whiteboard diagram for this setup. I'll describe it step by step and represent it textually (as if sketching boxes and arrows). This is a simple, all-in-one-server architecture using a LAMP-like stack (but with Nginx instead of Apache).
+
+#### Diagram Representation:
+
+```
+[User's Computer (Browser)]
+          |
+          | (1) Types www.foobar.com → DNS Query
+          v
+[DNS Resolver]
+          |
+          | (2) Resolves to IP 8.8.8.8 (A Record for www.foobar.com)
+          v
+[Single Server (IP: 8.8.8.8)]
+  +-----------------------------------+
+  |  - Web Server: Nginx               |
+  |    (Handles HTTP requests, serves  |
+  |     static files, proxies to app   |
+  |     server)                        |
+  |                                    |
+  |  - Application Server              |
+  |    (e.g., PHP-FPM or similar; runs |
+  |     dynamic code)                  |
+  |                                    |
+  |  - Application Files (Code Base)   |
+  |    (e.g., PHP scripts, HTML, CSS,  |
+  |     JS files stored on disk)       |
+  |                                    |
+  |  - Database: MySQL                 |
+  |    (Stores data like user info,    |
+  |     content)                       |
+  +-----------------------------------+
+          ^
+          | (3) HTTP Response (website content)
+          |
+[Back to User's Computer]
+```
+
+#### Flow Explanation:
+1. **DNS Resolution**: The user's browser queries a DNS resolver for www.foobar.com. The domain foobar.com is configured with a www record (an A record) that points directly to the server's IP address: 8.8.8.8.
+2. **Request to Server**: Once resolved, the browser sends an HTTP request (e.g., GET /) to the server at 8.8.8.8 on port 80 (or 443 for HTTPS).
+3. **Processing on Server**:
+   - Nginx (web server) receives the request. If it's for static files (e.g., images, CSS from application files), Nginx serves them directly. For dynamic content, it proxies the request to the application server.
+   - The application server executes the code from the application files (e.g., querying the MySQL database for data like user profiles or posts).
+   - MySQL returns the queried data to the application server, which generates the dynamic response (e.g., HTML page).
+   - Nginx sends the full response back to the user's browser.
+4. **Response Delivery**: The user's browser receives and renders the content.
+
+All components (Nginx, application server, application files, MySQL) run on the same single physical or virtual server machine.
+
+### Specifics About This Infrastructure
+
+- **What is a server**: A server is a specialized computer or software program designed to provide services, resources, or data to other computers (clients) over a network. In this case, it's a single machine (hardware or virtual) running the entire web stack, listening for incoming requests and responding with website content.
+
+- **What is the role of the domain name**: The domain name (foobar.com) acts as a human-readable alias for the server's IP address (8.8.8.8). It makes the website easy to remember and access, instead of users having to type the raw IP. It relies on DNS to translate the domain to the IP.
+
+- **What type of DNS record www is in www.foobar.com**: The "www" in www.foobar.com is a subdomain, and it's configured as an A record in DNS. An A record maps a domain or subdomain directly to an IPv4 address (here, 8.8.8.8).
+
+- **What is the role of the web server**: The web server (Nginx) is the frontline component that listens for incoming HTTP/HTTPS requests from users. It handles tasks like serving static files directly from the application files (for efficiency), managing connections, enforcing security (e.g., SSL/TLS), and proxying dynamic requests to the application server. Nginx is lightweight and excels at handling high concurrency.
+
+- **What is the role of the application server**: The application server runs the dynamic logic of the website. It interprets and executes the code from the application files (e.g., PHP, Python, or Node.js scripts) to generate content on-the-fly, such as processing user inputs, performing business logic, and interacting with the database.
+
+- **What is the role of the database**: The database (MySQL) is a structured storage system that holds the website's persistent data, such as user accounts, posts, settings, or e-commerce inventory. It allows the application server to query, insert, update, or delete data efficiently using SQL commands.
+
+- **What is the server using to communicate with the computer of the user requesting the website**: The server communicates with the user's computer using the HTTP (or HTTPS for secure) protocol over TCP/IP. This involves establishing a TCP connection to ensure reliable data transfer, with HTTP defining the request-response structure (e.g., headers, status codes, body content).
+
+### Issues with This Infrastructure
+
+- **SPOF (Single Point of Failure)**: The entire setup relies on one server. If it crashes, experiences hardware failure, or goes offline (e.g., due to power outage or network issues), the whole website becomes unavailable. There's no redundancy, so a single component failure (like MySQL crashing) can take down everything.
+
+- **Downtime when maintenance needed (like deploying new code web server needs to be restarted)**: Any maintenance, such as updating application files, restarting Nginx after configuration changes, or restarting the application server for new code deployment, requires stopping services temporarily. This causes downtime where users can't access the site, as there's no secondary server to handle traffic during the process.
+
+- **Cannot scale if too much incoming traffic**: With only one server, it has limited resources (CPU, memory, bandwidth). High traffic can overwhelm it, leading to slow response times, errors, or crashes. Scaling would require vertical upgrades (e.g., more RAM), but there's no horizontal scaling (adding more servers) built-in, and the database or application server might become bottlenecks under load.
