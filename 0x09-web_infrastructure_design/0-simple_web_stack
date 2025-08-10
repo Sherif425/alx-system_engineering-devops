@@ -9,6 +9,8 @@ Imagine a whiteboard diagram for this setup. I'll describe it step by step and r
 #### Diagram Representation:
 
 ```
+
+
 [User's Computer (Browser)]
           |
           | (1) Types www.foobar.com → DNS Query
